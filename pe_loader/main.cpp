@@ -386,17 +386,16 @@ void PE_Header::write_to_imagebuffer(
 
 	size_t image_size_of_headers = get_section_images_buffer(size_of_headers, section_alignment);
 	memmove((void*)image_buffer, file_buffer, size_of_headers);
-	image_buffer = image_buffer + image_size_of_headers;
 
 	for (auto item : section_headers) {
 		auto section_header = item.get();
-		DWORD virtual_address = section_header->get_virtual_size();
+
+		DWORD virtual_address = section_header->get_virtual_address();
 		DWORD pointer_to_raw_data = section_header->get_pointer_to_raw_data();
 		DWORD size_of_raw_data = section_header->get_size_of_raw_data();
 
-		file_buffer = file_buffer + pointer_to_raw_data;
-		memmove((void*)image_buffer, file_buffer, size_of_raw_data);
-		image_buffer = image_buffer + virtual_address;
+		memmove((void*)(image_buffer + virtual_address), (file_buffer + pointer_to_raw_data), size_of_raw_data);
+
 	}
 
 }
@@ -414,9 +413,6 @@ int main() {
 	vector<shared_ptr<PE_Header::Section_Header>> section_headers = pe_header.generate_section_headers(reloc_section_header);
 	//DWORD* p = pe_header.get_file_buffer_pointer();
 	pe_header.write_to_imagebuffer(dos_header, file_header, option_header, section_headers);
-
-
-
 
 	return 0;
 }
